@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  frab-revalida
+Globals:
+  Function:
+    Timeout: 60
+
+Resources:
+  BookNewRideFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: book_new_ride/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName:
+              !Ref FrabTable
+      Events:
+        BookNewRideApi:
+          Type: Api
+          Properties:
+            Path: /rides
+            Method: post
+  
+  FrabTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "PK"
+          AttributeType: "S"
+        - AttributeName: "SK"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "PK"
+          KeyType: "HASH"
+        - AttributeName: "SK"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: "frab_revalida"
+
+
+Outputs:
+  FrabRevalidaApi:
+    Description: "API Gateway endpoint URL for Prod stage for Frab Revalida API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
