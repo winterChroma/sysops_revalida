@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from hello_world import app
+from book_new_ride import app
 
 
 @pytest.fixture()
@@ -10,7 +10,7 @@ def apigw_event():
     """ Generates API GW Event"""
 
     return {
-        "body": '{ "test": "body"}',
+        "body": '{"riderId": "80fa91f9-79e2-4b05-add6-95ccdde4e82c", "startLocation": "14.503435, 121.288311","endLocation": "14.505650, 121.289868"}',
         "resource": "/{proxy+}",
         "requestContext": {
             "resourceId": "123456",
@@ -62,12 +62,10 @@ def apigw_event():
     }
 
 
-def test_lambda_handler(apigw_event, mocker):
+def test_lambda_handler(apigw_event):
 
     ret = app.lambda_handler(apigw_event, "")
     data = json.loads(ret["body"])
 
     assert ret["statusCode"] == 200
-    assert "message" in ret["body"]
-    assert data["message"] == "hello world"
     # assert "location" in data.dict_keys()

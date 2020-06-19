@@ -6,9 +6,11 @@ client = boto3.client('dynamodb', region_name="ap-southeast-1")
 
 def lambda_handler(event, context):
 
-    passenger = event['body']["riderId"]
-    startLocation = event['body']["startLocation"]
-    endLocation = event['body']["endLocation"]
+    body = json.loads(event['body'])
+
+    passenger = body["riderId"]
+    startLocation = body["startLocation"]
+    endLocation = body["endLocation"]
     status = "Finding a driver"
 
     rideId = str(uuid.uuid4())
@@ -38,7 +40,7 @@ def lambda_handler(event, context):
 
     return {
         "statusCode": 200,
-        "body": {
+        "body": json.dumps({
             "rideId": rideId
-        },
+        })
     }
