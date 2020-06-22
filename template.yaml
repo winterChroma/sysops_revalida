@@ -21,8 +21,109 @@ Resources:
         BookNewRideApi:
           Type: Api
           Properties:
+            Auth:
+              ApiKeyRequired: true
             Path: /rides
             Method: post
+  
+  GetRideInfoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get_ride_info/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref FrabTable
+      Events:
+         GetRideInfoApi:
+          Type: Api
+          Properties:
+            Auth:
+              ApiKeyRequired: true
+            Path: /rides/{rideId}
+            Method: get
+
+  UpdateLocationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: update_location/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName:
+              !Ref FrabTable
+      Events:
+        UpdateLocationApi:
+          Type: Api
+          Properties:
+            Auth:
+              ApiKeyRequired: true
+            Path: /{riderType}/{riderId}/locations
+            Method: put
+  
+  GetLocationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get_location/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref FrabTable
+      Events:
+        GetLocationApi:
+          Type: Api
+          Properties:
+            Auth:
+              ApiKeyRequired: true
+            Path: /{riderType}/{riderId}
+            Method: get
+
+  AcceptRideRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: accept_ride_request/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref FrabTable
+      Events:
+        AcceptRideRequestApi:
+          Type: Api
+          Properties:
+            Auth:
+              ApiKeyRequired: true
+            Path: /drivers/{driverId}/rides/{rideId}
+            Method: put
+  
+  FrabUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      ApiStages:
+        - ApiId: !Sub "${ServerlessRestApi}"
+          Stage: Prod
+
+  FrabApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Enabled: true
+      StageKeys:
+        - RestApiId: !Sub "${ServerlessRestApi}"
+          StageName: Prod
+  
+  FrabUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref FrabApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref FrabUsagePlan
+
   
   FrabTable:
     Type: AWS::DynamoDB::Table
@@ -41,9 +142,24 @@ Resources:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
       TableName: "frab_revalida"
-
+      GlobalSecondaryIndexes:
+        - IndexName: "frab_inverted_index"
+          KeySchema:
+            - AttributeName: "SK"
+              KeyType: "HASH"
+            - AttributeName: "PK"
+              KeyType: "RANGE"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
+          Projection:
+            ProjectionType: "ALL"
 
 Outputs:
   FrabRevalidaApi:
     Description: "API Gateway endpoint URL for Prod stage for Frab Revalida API"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  FrabApiKey:
+    Description: "API Key ID for sending requests"
+    Value: !Ref FrabApiKey
+  

@@ -24,7 +24,11 @@ def lambda_handler(event, context):
             "SK": {
                 "S": "RIDE#" + rideId
             },
-            "rideId": {"S": rideId
+            "rideId": {
+                "S": rideId
+            },
+            "passengerId": {
+                passenger
             },
             "status": {
                 "S": status
@@ -34,7 +38,7 @@ def lambda_handler(event, context):
             },
             "endLocation": {
                 "S": endLocation
-            }
+            },
         }
     )
 
