@@ -28,7 +28,7 @@ def lambda_handler(event, context):
                 "S": rideId
             },
             "passengerId": {
-                passenger
+                "S": passenger
             },
             "status": {
                 "S": status

@@ -21,8 +21,6 @@ Resources:
         BookNewRideApi:
           Type: Api
           Properties:
-            Auth:
-              ApiKeyRequired: true
             Path: /rides
             Method: post
   
@@ -40,8 +38,6 @@ Resources:
          GetRideInfoApi:
           Type: Api
           Properties:
-            Auth:
-              ApiKeyRequired: true
             Path: /rides/{rideId}
             Method: get
 
@@ -59,8 +55,6 @@ Resources:
         UpdateLocationApi:
           Type: Api
           Properties:
-            Auth:
-              ApiKeyRequired: true
             Path: /{riderType}/{riderId}/locations
             Method: put
   
@@ -78,8 +72,6 @@ Resources:
         GetLocationApi:
           Type: Api
           Properties:
-            Auth:
-              ApiKeyRequired: true
             Path: /{riderType}/{riderId}
             Method: get
 
@@ -97,34 +89,25 @@ Resources:
         AcceptRideRequestApi:
           Type: Api
           Properties:
-            Auth:
-              ApiKeyRequired: true
             Path: /drivers/{driverId}/rides/{rideId}
             Method: put
-  
-  FrabUsagePlan:
-    Type: AWS::ApiGateway::UsagePlan
-    Properties:
-      ApiStages:
-        - ApiId: !Sub "${ServerlessRestApi}"
-          Stage: Prod
 
-  FrabApiKey:
-    Type: AWS::ApiGateway::ApiKey
-    Properties:
-      Enabled: true
-      StageKeys:
-        - RestApiId: !Sub "${ServerlessRestApi}"
-          StageName: Prod
+  FrabBasicAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties: 
+      CodeUri: authorizer/
+      Handler: app.handler
+      Runtime: nodejs12.x
   
-  FrabUsagePlanKey:
-    Type: AWS::ApiGateway::UsagePlanKey
-    Properties:
-      KeyId: !Ref FrabApiKey
-      KeyType: API_KEY
-      UsagePlanId: !Ref FrabUsagePlan
+  GatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties: 
+      ResponseParameters:
+        gatewayresponse.header.WWW-Authenticate: "'Basic'"
+      ResponseType: UNAUTHORIZED
+      RestApiId: !Sub "${ServerlessRestApi}"
+      StatusCode: 401
 
-  
   FrabTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -157,9 +140,9 @@ Resources:
 
 Outputs:
   FrabRevalidaApi:
-    Description: "API Gateway endpoint URL for Prod stage for Frab Revalida API"
+    Description: "API Gateway endpoint URL for prod stage for Frab Revalida API"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  FrabApiKey:
-    Description: "API Key ID for sending requests"
-    Value: !Ref FrabApiKey
+  # FrabApiKey:
+  #   Description: "API Key ID for sending requests"
+  #   Value: !Ref FrabApiKey
   
