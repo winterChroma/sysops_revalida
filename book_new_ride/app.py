@@ -8,18 +8,21 @@ def lambda_handler(event, context):
 
     body = json.loads(event['body'])
 
-    passenger = body["riderId"]
-    startLocation = body["startLocation"]
-    endLocation = body["endLocation"]
-    status = "Finding a driver"
+    userId = body["userId"]
+    bookingLocationN = body["bookingLocation"]["N"]
+    bookingLocationW = body["bookingLocation"]["W"]
+    targetLocationN = body["targetLocation"]["N"]
+    targetLocationW = body["targetLocation"]["W"]
+    state = "pending"
 
     rideId = str(uuid.uuid4())
+    locationId = str(uuid.uuid4())
 
     response = client.put_item(
         TableName = "frab_revalida",
         Item = {
             "PK": {
-                "S": "PS#" + passenger
+                "S": "PS#" + userId
             },
             "SK": {
                 "S": "RIDE#" + rideId
@@ -28,16 +31,33 @@ def lambda_handler(event, context):
                 "S": rideId
             },
             "passengerId": {
-                "S": passenger
+                "S": userId
             },
-            "status": {
-                "S": status
+            "state": {
+                "S": state
             },
-            "startLocation": {
-                "S": startLocation
+            "locationId": {
+                "S": locationId
             },
-            "endLocation": {
-                "S": endLocation
+            "bookingLocation": {
+                "M": {
+                    "Longitude" : {
+                        "S" : bookingLocationN
+                    },
+                    "Latitude" : {
+                        "S" : bookingLocationW
+                    }
+                }
+            },
+            "targetLocation": {
+                "M": {
+                    "Longitude" : {
+                        "S" : targetLocationN
+                    },
+                    "Latitude" : {
+                        "S" : targetLocationW
+                    }
+                }
             },
         }
     )
@@ -45,6 +65,7 @@ def lambda_handler(event, context):
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "rideId": rideId
+            "rideId": rideId,
+            "state": state
         })
     }
