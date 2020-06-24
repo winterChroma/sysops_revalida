@@ -12,7 +12,7 @@ Resources:
     Properties:
       CodeUri: book_new_ride/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
       Policies:
         - DynamoDBWritePolicy:
             TableName:
@@ -29,7 +29,7 @@ Resources:
     Properties:
       CodeUri: get_ride_info/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -46,7 +46,7 @@ Resources:
     Properties:
       CodeUri: update_location/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
       Policies:
         - DynamoDBWritePolicy:
             TableName:
@@ -63,7 +63,7 @@ Resources:
     Properties:
       CodeUri: get_location/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -72,7 +72,7 @@ Resources:
         GetLocationApi:
           Type: Api
           Properties:
-            Path: /{riderType}/{riderId}
+            Path: /{riderType}/{riderId}/
             Method: get
 
   AcceptRideRequestFunction:
@@ -80,7 +80,7 @@ Resources:
     Properties:
       CodeUri: accept_ride_request/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -89,8 +89,25 @@ Resources:
         AcceptRideRequestApi:
           Type: Api
           Properties:
-            Path: /drivers/{driverId}/rides/{rideId}
+            Path: /drivers/{driverId}/rides/{rideId}/accept
             Method: put
+            
+  ReturnAcceptableFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: return_acceptable_rides/
+      Handler: app.lambda_handler
+      Runtime: python3.6
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref FrabTable
+      Events:
+        AcceptRideRequestApi:
+          Type: Api
+          Properties:
+            Path: /drivers/{driverId}/rides/acceptable
+            Method: get
 
   FrabBasicAuthorizerFunction:
     Type: AWS::Serverless::Function
