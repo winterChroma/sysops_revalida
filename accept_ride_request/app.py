@@ -1,5 +1,6 @@
 import json
 import boto3
+from datetime import datetime
 
 client = boto3.client('dynamodb', region_name="ap-southeast-1")
 
@@ -105,6 +106,6 @@ def lambda_handler(event, context):
                 "N": acceptLocationN,
                 "W": acceptLocationW
             },
-            "createdAt": "placeholder"
+            "createdAt": datetime.now()
         })
     }
