@@ -11,9 +11,10 @@ def lambda_handler(event, context):
         TableName = "frab_revalida",
         IndexName = "frab_inverted_index",
         Select = "SPECIFIC_ATTRIBUTES",
-        ProjectionExpression="#S",
+        ProjectionExpression="#S, #D",
         ExpressionAttributeNames={
-            "#S" : "state"
+            "#S" : "state",
+            "#D" : "driverId"
         },
         KeyConditionExpression="SK = :rideId",
         ExpressionAttributeValues={
@@ -24,11 +25,13 @@ def lambda_handler(event, context):
     )
 
     state = response["Items"][0]["state"]["S"]
+    driverId = response["Items"][0]["driverId"]["S"]
 
     return {
         "statusCode": 200,
         "body": json.dumps({
             "rideId": rideId,
-            "state": state
+            "state": state,
+            "driverId": driverId
         })
     }

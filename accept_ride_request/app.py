@@ -8,10 +8,9 @@ def lambda_handler(event, context):
     driverId = event['pathParameters']["driverId"]
     rideId = event['pathParameters']["rideId"]
     body = json.loads(event['body'])
-
-
-
-
+    acceptLocationN = body["acceptLocation"]["N"]
+    acceptLocationW = body["acceptLocation"]["W"]
+    
 
     queryResponse = client.query(
         TableName = "frab_revalida",
@@ -52,10 +51,60 @@ def lambda_handler(event, context):
             }
         }
     )
+    #########################subject to change
+    response = client.update_item(
+        TableName = "frab_revalida",
+        Key = {
+            "PK": {
+                "S": "DR#" + driverId
+            },
+            "SK": {
+                "S": "#PROFILE#" + driverId
+            }
+        },
+        UpdateExpression=
+        "SET #location=:location, #driverId=:driverId, #acceptlocation=:acceptlocation",
+        ExpressionAttributeNames={
+            "#location": "location",
+            "#driverId": "driverId",
+            "#acceptlocation": "acceptlocation"
+        },
+        ExpressionAttributeValues={
+            ":acceptlocation": {
+                "M": {
+                    "Longitude" : {
+                        "S" : acceptLocationN
+                    },
+                    "Latitude" : {
+                        "S" : acceptLocationW
+                    }
+                }
+            },
+            ":location": {
+                "M": {
+                    "Longitude" : {
+                        "S" : acceptLocationN
+                    },
+                    "Latitude" : {
+                        "S" : acceptLocationW
+                    }
+                }
+            },
+            ":driverId": {
+                "S": driverId
+            }
+        }
+    )
+    
 
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "response": "Ride accepted."
+            "rideId": rideId,
+            "acceptLocation": {
+                "N": acceptLocationN,
+                "W": acceptLocationW
+            },
+            "createdAt": "placeholder"
         })
     }
