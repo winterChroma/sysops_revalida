@@ -13,7 +13,7 @@ def lambda_handler(event, context):
         Select = "SPECIFIC_ATTRIBUTES",
         ProjectionExpression="#S",
         ExpressionAttributeNames={
-            "#S" : "status"
+            "#S" : "state"
         },
         KeyConditionExpression="SK = :rideId",
         ExpressionAttributeValues={
@@ -23,11 +23,11 @@ def lambda_handler(event, context):
         }
     )
 
-    status = response["Items"][0]["status"]["S"]
+    state = response["Items"][0]["state"]["S"]
 
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "status": status
+            "state": state
         })
     }
