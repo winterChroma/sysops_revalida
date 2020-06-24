@@ -1,0 +1,35 @@
+config:
+  target: '<endpoint of frab_revalida>'
+  phases:
+    - duration: 60
+      arrivalRate: 20
+      rampTo: 50
+      name: "Pre Warmed"
+    - duration: 60
+      arrivalRate: 50
+      name: "Max Load"
+  payload:
+    path: "frab_revalida.csv"
+    fields:
+      - "passengerId"
+      - "driverId"
+      - "location"
+      - "startLocation"
+      - "endLocation"
+scenarios:
+  - name: "finding ride"
+  - flow:
+    - post:
+        url: "/"
+        json:
+          passengerId: "{{ passengerId }}"
+          driverId: "{{ driverId }}"
+          location: "{{ location }}"
+          startLocation: "{{ startLocation }}"
+          endLocation: "{{ endLocation }}"
+        capture:
+          json: "$.result.rideId"
+          as: "rideId"
+    - think: 10
+    - get:
+        url: "/<endpoint of frab_revalida>/{{ rideId }}"
