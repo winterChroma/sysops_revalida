@@ -9,14 +9,20 @@ def lambda_handler(event, context):
     riderId = event['pathParameters']["riderId"]
 
     body = json.loads(event['body'])
-    location = body["location"]
+    
 
     if(riderType=="riders"):
         pk = "PS#" + riderId
-        riderTypeId = "passenderId"
+        riderTypeId = "passengerId"
+        location = "currentLocation"
+        LocationN = body["currentLocation"]["N"]
+        LocationW = body["currentLocation"]["W"]
     elif(riderType == "drivers"):
         pk = "DR#" + riderId
         riderTypeId = "driverId"
+        location = "updatedLocation"
+        LocationN = body["updatedLocation"]["N"]
+        LocationW = body["updatedLocation"]["W"]
     
     response = client.update_item(
         TableName = "frab_revalida",
@@ -35,7 +41,14 @@ def lambda_handler(event, context):
         },
         ExpressionAttributeValues={
             ":loc": {
-                "S": location
+                "M": {
+                    "Longitude" : {
+                        "S" : LocationN
+                    },
+                    "Latitude" : {
+                        "S" : LocationW
+                    }
+                }
             },
             ":riderId": {
                 "S": riderId
@@ -46,6 +59,10 @@ def lambda_handler(event, context):
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "response": "Location updated."
+            location : {
+                "N": LocationN,
+                "W": LocationW
+            }
+
         })
     }

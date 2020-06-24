@@ -7,6 +7,11 @@ def lambda_handler(event, context):
 
     driverId = event['pathParameters']["driverId"]
     rideId = event['pathParameters']["rideId"]
+    body = json.loads(event['body'])
+
+
+
+
 
     queryResponse = client.query(
         TableName = "frab_revalida",
@@ -34,16 +39,16 @@ def lambda_handler(event, context):
                 "S": sk
             }
         },
-        UpdateExpression="SET driverId=:driverId, #status=:status",
+        UpdateExpression="SET driverId=:driverId, #state=:state",
         ExpressionAttributeNames={
-            "#status": "status"
+            "#state": "state"
         },
         ExpressionAttributeValues={
             ":driverId": {
                 "S": driverId
             },
-            ":status": {
-                "S": "On going"
+            ":state": {
+                "S": "accepted"
             }
         }
     )
