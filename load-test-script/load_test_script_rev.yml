@@ -1,0 +1,72 @@
+config:
+  target: '<endpoint of frab_revalida>'
+  phases:
+    - duration: 60
+      arrivalRate: 20
+      rampTo: 50
+      name: "Pre Warmed"
+    - duration: 60
+      arrivalRate: 50
+      name: "Max Load"
+  payload:
+    path: "frab_revalida.csv"
+    fields:
+      - "passengerId"
+      - "driverId"
+      - "locations"
+      - "startLocation"
+      - "endLocation"
+scenarios:
+  - name: "finding ride"
+  - flow:
+    - post:
+        url: "/rides"
+        json:
+          passengerId: "{{ passengerId }}"
+          driverId: "{{ driverId }}"
+          location: "{{ locations }}"
+          startLocation: "{{ startLocation }}"
+          endLocation: "{{ endLocation }}"
+        capture:
+          json: "$.result.rideId"
+          as: "rideId"
+    - think: 10
+    - get:
+        url: "/rides/{{ rideId }}"
+  - name: "get rideId"
+  - flow:
+    - get:
+        url: "/rides/{{ rideId }}"
+  - name: "Accepts the current longitude and latitude of a driver"
+  - flow:
+    - post: 
+        url: "/drivers/:driverId/locations/"
+        json:
+          driverId: "{{ driverId }}"
+          location: "{{ location }}"
+          startLocation: "{{ startLocation }}"
+          endLocation: "{{ endLocation }}"
+  - name: "Accepts the ride request (driver side.)"
+  - flow: 
+    - post:
+        url: "/drivers/:driverId/rides/:rideId/accept"
+        json:
+          driverId: "{{ driverId }}"
+  - name: "Returns the longitude and latitude of a rider."
+  - flow:
+    - get:
+        url: "/riders/:riderId/locations/{{ locations }}"
+  - name: "Updates the current longitude and latitude of a rider."
+  - flow:
+    - post:
+        url: "/riders/:riderId/locations"
+        json:
+          rideId: "{{ rideId }}"
+          locations: "{{ locations }}"
+  - name: "Returns a list of rides that the driver can accept. The list of rides is determined by the Ride Scheduling Algorithm."
+  - flow:
+    - post:
+        url: "/drivers/:driverId/ /rides/acceptable"
+        json:
+          rideId: "{{ rideId }}"
+          driverId: "{{ driverId }}"
