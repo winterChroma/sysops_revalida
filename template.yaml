@@ -153,7 +153,23 @@ Resources:
             ReadCapacityUnits: "5"
             WriteCapacityUnits: "5"
           Projection:
-            ProjectionType: "ALL"
+            ProjectionType: "INCLUDE"
+            NonKeyAttributes:
+              - "timestamp"
+        - IndexName: "frab_pending_rides"
+          KeySchema:
+            - AttributeName: "state"
+              KeyType: "HASH"
+            - AttributeName: "datePendingState"
+              KeyType: "HASH"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
+          Projection:
+            ProjectionType: "INCLUDE"
+            NonKeyAttributes:
+              - "bookingLocation"
+              - "rideId"
 
 Outputs:
   FrabRevalidaApi:

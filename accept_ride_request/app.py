@@ -12,15 +12,17 @@ def lambda_handler(event, context):
     acceptLocationN = body["acceptLocation"]["N"]
     acceptLocationW = body["acceptLocation"]["W"]
     
-    now = datetime.now() + timedelta(hours=8)
-    timestamp = now.strftime("%Y-%m-%dT%H-%M-%S+8000")
+    
 
     queryResponse = client.query(
         TableName = "frab_revalida",
         IndexName = "frab_inverted_index",
         Select = "SPECIFIC_ATTRIBUTES",
-        ProjectionExpression="PK, SK",
+        ProjectionExpression="PK, SK, #ts",
         KeyConditionExpression="SK = :rideId",
+        ExpressionAttributeNames={
+            "#ts": "timestamp"
+        },
         ExpressionAttributeValues={
             ":rideId": {
                 "S": "RIDE#" + rideId
@@ -30,6 +32,7 @@ def lambda_handler(event, context):
 
     pk = queryResponse["Items"][0]["PK"]["S"]
     sk = queryResponse["Items"][0]["SK"]["S"]
+    timestamp = queryResponse["Items"][0]["timestamp"]["S"]
     
     response = client.update_item(
         TableName = "frab_revalida",
@@ -41,10 +44,9 @@ def lambda_handler(event, context):
                 "S": sk
             }
         },
-        UpdateExpression="SET driverId=:driverId, #state=:state, #ts=:ts, acceptLocation=:acceptLocation, driverIdKey=:driverIdKey",
+        UpdateExpression="SET driverId=:driverId, #state=:state, acceptLocation=:acceptLocation, driverIdKey=:driverIdKey REMOVE datePendingState",
         ExpressionAttributeNames={
-            "#state": "state",
-            "#ts": "timestamp"
+            "#state": "state"
         },
         ExpressionAttributeValues={
             ":driverId": {
@@ -55,9 +57,6 @@ def lambda_handler(event, context):
             },
             ":state": {
                 "S": "accepted"
-            },
-            ":ts": {
-                "S": timestamp
             },
             ":acceptLocation": {
                 "M": {

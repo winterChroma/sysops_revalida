@@ -15,16 +15,16 @@ def lambda_handler(event, context):
     if(riderType=="riders"):
         pk = "PS#" + riderId
         riderTypeId = "passengerId"
-        location = "currentLocation"
-        LocationN = body["currentLocation"]["N"]
-        LocationW = body["currentLocation"]["W"]
+        locationText = "currentLocation"
+        locationN = body["currentLocation"]["N"]
+        locationW = body["currentLocation"]["W"]
         timestampType = "lastActive"
     elif(riderType == "drivers"):
         pk = "DR#" + riderId
         riderTypeId = "driverId"
-        location = "updatedLocation"
-        LocationN = body["updatedLocation"]["N"]
-        LocationW = body["updatedLocation"]["W"]
+        locationText = "updatedLocation"
+        locationN = body["updatedLocation"]["N"]
+        locationW = body["updatedLocation"]["W"]
         timestampType = "createdAt"
     
     locationId = str(uuid.uuid4())
@@ -51,10 +51,10 @@ def lambda_handler(event, context):
             ":loc": {
                 "M": {
                     "Longitude" : {
-                        "S" : LocationN
+                        "S" : locationN
                     },
                     "Latitude" : {
-                        "S" : LocationW
+                        "S" : locationW
                     }
                 }
             },
@@ -74,9 +74,9 @@ def lambda_handler(event, context):
         "statusCode": 200,
         "body": json.dumps({
             "locationId": locationId,
-            location : {
-                "N": LocationN,
-                "W": LocationW
+            locationText : {
+                "N": locationN,
+                "W": locationW
             },
             timestampType: timestamp
         })

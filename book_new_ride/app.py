@@ -1,67 +1,83 @@
 import json
 import uuid
 import boto3
+from datetime import datetime, timedelta
 
 client = boto3.client('dynamodb', region_name="ap-southeast-1")
 
 def lambda_handler(event, context):
 
-    body = json.loads(event['body'])
+    try:
+        body = json.loads(event['body'])
 
-    riderId = body["riderId"]
-    bookingLocationN = body["bookingLocation"]["N"]
-    bookingLocationW = body["bookingLocation"]["W"]
-    targetLocationN = body["targetLocation"]["N"]
-    targetLocationW = body["targetLocation"]["W"]
-    state = "pending"
+        riderId = body["riderId"]
+        bookingLocationN = body["bookingLocation"]["N"]
+        bookingLocationW = body["bookingLocation"]["W"]
+        targetLocationN = body["targetLocation"]["N"]
+        targetLocationW = body["targetLocation"]["W"]
+        state = "pending"
 
-    rideId = str(uuid.uuid4())
+        rideId = str(uuid.uuid4())
+        now = datetime.now() + timedelta(hours=8)
+        timestamp = now.strftime("%Y-%m-%dT%H-%M-%S+8000")
 
-    response = client.put_item(
-        TableName = "frab_revalida",
-        Item = {
-            "PK": {
-                "S": "PS#" +    riderId
-            },
-            "SK": {
-                "S": "RIDE#" + rideId
-            },
-            "rideId": {
-                "S": rideId
-            },
-            "passengerId": {
-                "S":    riderId
-            },
-            "state": {
-                "S": state
-            },
-            "bookingLocation": {
-                "M": {
-                    "Longitude" : {
-                        "S" : bookingLocationN
-                    },
-                    "Latitude" : {
-                        "S" : bookingLocationW
+        response = client.put_item(
+            TableName = "frab_revalida",
+            Item = {
+                "PK": {
+                    "S": "PS#" +    riderId
+                },
+                "SK": {
+                    "S": "RIDE#" + rideId
+                },
+                "rideId": {
+                    "S": rideId
+                },
+                "passengerId": {
+                    "S":    riderId
+                },
+                "state": {
+                    "S": state
+                },
+                "bookingLocation": {
+                    "M": {
+                        "Longitude" : {
+                            "S" : bookingLocationN
+                        },
+                        "Latitude" : {
+                            "S" : bookingLocationW
+                        }
                     }
-                }
-            },
-            "targetLocation": {
-                "M": {
-                    "Longitude" : {
-                        "S" : targetLocationN
-                    },
-                    "Latitude" : {
-                        "S" : targetLocationW
+                },
+                "targetLocation": {
+                    "M": {
+                        "Longitude" : {
+                            "S" : targetLocationN
+                        },
+                        "Latitude" : {
+                            "S" : targetLocationW
+                        }
                     }
+                },
+                "timestamp": {
+                    "S": timestamp
+                },
+                "datePendingState": {
+                    "S": timestamp +"#"+ state
                 }
-            },
+
+            }
+        )
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "rideId": rideId,
+                "state": state
+            })
         }
-    )
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "rideId": rideId,
-            "state": state
-        })
-    }
+    except:
+        return {
+            "statusCode": 400,
+            "body": "Bad request"
+        }
