@@ -8,7 +8,7 @@ def lambda_handler(event, context):
 
     body = json.loads(event['body'])
 
-    userId = body["userId"]
+    riderId = body["riderId"]
     bookingLocationN = body["bookingLocation"]["N"]
     bookingLocationW = body["bookingLocation"]["W"]
     targetLocationN = body["targetLocation"]["N"]
@@ -16,13 +16,12 @@ def lambda_handler(event, context):
     state = "pending"
 
     rideId = str(uuid.uuid4())
-    locationId = str(uuid.uuid4())
 
     response = client.put_item(
         TableName = "frab_revalida",
         Item = {
             "PK": {
-                "S": "PS#" + userId
+                "S": "PS#" +    riderId
             },
             "SK": {
                 "S": "RIDE#" + rideId
@@ -31,13 +30,10 @@ def lambda_handler(event, context):
                 "S": rideId
             },
             "passengerId": {
-                "S": userId
+                "S":    riderId
             },
             "state": {
                 "S": state
-            },
-            "locationId": {
-                "S": locationId
             },
             "bookingLocation": {
                 "M": {

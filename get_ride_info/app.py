@@ -25,13 +25,26 @@ def lambda_handler(event, context):
     )
 
     state = response["Items"][0]["state"]["S"]
-    driverId = response["Items"][0]["driverId"]["S"]
+    
+    try:
+        driverId = response["Items"][0]["driverId"]["S"]
+    except:
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "rideId": rideId,
+                "state": state
+            })
+        }
 
     return {
         "statusCode": 200,
         "body": json.dumps({
             "rideId": rideId,
-            "state": state,
-            "driverId": driverId
+            "state": state
         })
     }
+
+    
+
+    

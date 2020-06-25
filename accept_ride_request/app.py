@@ -1,6 +1,6 @@
 import json
 import boto3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 client = boto3.client('dynamodb', region_name="ap-southeast-1")
 
@@ -12,6 +12,8 @@ def lambda_handler(event, context):
     acceptLocationN = body["acceptLocation"]["N"]
     acceptLocationW = body["acceptLocation"]["W"]
     
+    now = datetime.now() + timedelta(hours=8)
+    timestamp = now.strftime("%Y-%m-%dT%H-%M-%S+8000")
 
     queryResponse = client.query(
         TableName = "frab_revalida",
@@ -39,39 +41,25 @@ def lambda_handler(event, context):
                 "S": sk
             }
         },
-        UpdateExpression="SET driverId=:driverId, #state=:state",
+        UpdateExpression="SET driverId=:driverId, #state=:state, #ts=:ts, acceptLocation=:acceptLocation, driverIdKey=:driverIdKey",
         ExpressionAttributeNames={
-            "#state": "state"
+            "#state": "state",
+            "#ts": "timestamp"
         },
         ExpressionAttributeValues={
             ":driverId": {
                 "S": driverId
+            },
+            ":driverIdKey": {
+                "S": "DR#" + driverId
             },
             ":state": {
                 "S": "accepted"
-            }
-        }
-    )
-    #########################subject to change
-    response = client.update_item(
-        TableName = "frab_revalida",
-        Key = {
-            "PK": {
-                "S": "DR#" + driverId
             },
-            "SK": {
-                "S": "#PROFILE#" + driverId
-            }
-        },
-        UpdateExpression=
-        "SET #location=:location, #driverId=:driverId, #acceptlocation=:acceptlocation",
-        ExpressionAttributeNames={
-            "#location": "location",
-            "#driverId": "driverId",
-            "#acceptlocation": "acceptlocation"
-        },
-        ExpressionAttributeValues={
-            ":acceptlocation": {
+            ":ts": {
+                "S": timestamp
+            },
+            ":acceptLocation": {
                 "M": {
                     "Longitude" : {
                         "S" : acceptLocationN
@@ -80,23 +68,9 @@ def lambda_handler(event, context):
                         "S" : acceptLocationW
                     }
                 }
-            },
-            ":location": {
-                "M": {
-                    "Longitude" : {
-                        "S" : acceptLocationN
-                    },
-                    "Latitude" : {
-                        "S" : acceptLocationW
-                    }
-                }
-            },
-            ":driverId": {
-                "S": driverId
             }
         }
     )
-    
 
     return {
         "statusCode": 200,
@@ -106,6 +80,6 @@ def lambda_handler(event, context):
                 "N": acceptLocationN,
                 "W": acceptLocationW
             },
-            "createdAt": datetime.now()
+            "createdAt": timestamp
         })
     }

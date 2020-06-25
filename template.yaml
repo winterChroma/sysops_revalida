@@ -12,7 +12,7 @@ Resources:
     Properties:
       CodeUri: book_new_ride/
       Handler: app.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Policies:
         - DynamoDBWritePolicy:
             TableName:
@@ -29,7 +29,7 @@ Resources:
     Properties:
       CodeUri: get_ride_info/
       Handler: app.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -46,7 +46,7 @@ Resources:
     Properties:
       CodeUri: update_location/
       Handler: app.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Policies:
         - DynamoDBWritePolicy:
             TableName:
@@ -63,7 +63,7 @@ Resources:
     Properties:
       CodeUri: get_location/
       Handler: app.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -80,7 +80,7 @@ Resources:
     Properties:
       CodeUri: accept_ride_request/
       Handler: app.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -97,7 +97,7 @@ Resources:
     Properties:
       CodeUri: return_acceptable_rides/
       Handler: app.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
