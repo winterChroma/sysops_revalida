@@ -1,0 +1,30 @@
+config:
+  target: "https://7jw4oebppb.execute-api.ap-southeast-1.amazonaws.com/Prod"
+  phases:
+    - duration: 5
+      arrivalRate: 1
+      name: "Off-peak"
+  defaults:
+    headers:
+      Authorization: Basic c29tZS1hcGktdG9rZW46
+  payload:
+    path: "rev_payload.csv"
+    cast: false
+    fields:
+      - "passengerId"
+      - "startLocationN"
+      - "startLocationW"
+      - "endLocationN"
+      - "endLocationW"
+      - "driverId"
+scenarios:
+  - flow:
+    - put:
+        url: "/riders/{{ passengerId }}/locations"
+        json:
+          currentLocation:
+            N: "{{ startLocationN }}"
+            W: "{{ startLocationW }}"
+    - get:
+        url: "/riders/{{ passengerId }}"
+    
