@@ -44,7 +44,7 @@ def lambda_handler(event, context):
                 "S": sk
             }
         },
-        UpdateExpression="SET driverId=:driverId, #state=:state, acceptLocation=:acceptLocation, driverIdKey=:driverIdKey REMOVE datePendingState",
+        UpdateExpression="SET driverId=:driverId, #state=:state, acceptLocation=:acceptLocation, driverIdKey=:driverIdKey, stateDate=:stateDate REMOVE datePendingState",
         ExpressionAttributeNames={
             "#state": "state"
         },
@@ -57,6 +57,9 @@ def lambda_handler(event, context):
             },
             ":state": {
                 "S": "accepted"
+            },
+            ":stateDate": {
+                "S": "accepted#" + timestamp
             },
             ":acceptLocation": {
                 "M": {

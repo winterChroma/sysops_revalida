@@ -48,7 +48,7 @@ Resources:
       Handler: app.lambda_handler
       Runtime: python3.8
       Policies:
-        - DynamoDBWritePolicy:
+        - DynamoDBCrudPolicy:
             TableName:
               !Ref FrabTable
       Events:
@@ -154,16 +154,10 @@ Resources:
           AttributeType: "S"
         - AttributeName: "state"
           AttributeType: "S"
-        # - AttributeName: "location"
-        #   AttributeType: "S"
-        # - AttributeName: "timestamp"
-        #   AttributeType: "S"
-        # - AttributeName: "driverId"
-        #   AttributeType: "S"
-        # - AttributeName: "bookingLocation"
-        #   AttributeType: "S"
-        # - AttributeName: "rideId"
-        #   AttributeType: "S"
+        - AttributeName: "driverIdKey"
+          AttributeType: "S"
+        - AttributeName: "stateDate"
+          AttributeType: "S"
       KeySchema:
         - AttributeName: "PK"
           KeyType: "HASH"
@@ -205,6 +199,21 @@ Resources:
             NonKeyAttributes:
               - "bookingLocation"
               - "rideId"
+        - IndexName: "frab_ride_state_update"
+          KeySchema:
+            - AttributeName: "driverIdKey"
+              KeyType: "HASH"
+            - AttributeName: "stateDate"
+              KeyType: "RANGE"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
+          Projection:
+            ProjectionType: "INCLUDE"
+            NonKeyAttributes:
+              - "bookingLocation"
+              - "targetLocation"
+              - "state"
 
 Outputs:
   FrabRevalidaApi:

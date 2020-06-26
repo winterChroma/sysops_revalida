@@ -2,6 +2,7 @@ import json
 import boto3
 import uuid
 from datetime import datetime, timedelta
+from geopy.distance import distance
 
 client = boto3.client('dynamodb', region_name="ap-southeast-1")
 
@@ -71,6 +72,82 @@ def lambda_handler(event, context):
                 }
             }
         )
+
+        if(riderType == "drivers"):
+            stateUpdateResponse = client.query(
+                TableName = "frab_revalida",
+                IndexName = "frab_ride_state_update",
+                KeyConditionExpression = "driverIdKey= :pk",
+                ExpressionAttributeValues= {
+                    ":pk": {
+                        "S": pk
+                    }
+                },
+                Limit=1
+            )
+
+            stateDate = stateUpdateResponse["Items"][0]["stateDate"]["S"]
+            state = stateDate.split("#")[0]
+            date = stateDate.split("#")[1]
+            pk = stateUpdateResponse["Items"][0]["PK"]["S"]
+            sk = stateUpdateResponse["Items"][0]["SK"]["S"]
+
+            if(state == "accepted"):
+                bookingLocation = stateUpdateResponse["Items"][0]["bookingLocation"]["M"]
+                bookingLocationN = bookingLocation["Longitude"]["S"]
+                bookingLocationW = bookingLocation["Latitude"]["S"]
+                dist = distance((locationN, locationW), (bookingLocationN, bookingLocationW)).m
+                if(dist <= 20.0):
+                    inProgressResponse = client.update_item(
+                        TableName = "frab_revalida",
+                        Key = {
+                            "PK": {
+                                "S": pk
+                            },
+                            "SK": {
+                                "S": sk
+                            }
+                        },
+                        UpdateExpression="SET #state=:state, stateDate=:stateDate",
+                        ExpressionAttributeNames={
+                            "#state": "state"
+                        },
+                        ExpressionAttributeValues={
+                            ":state": {
+                                "S": "in_progress"
+                            },
+                            ":stateDate": {
+                                "S": "in_progress#"+date
+                            }
+                        }
+                    )
+                    
+            if(state == "in_progress"):
+                targetLocation = stateUpdateResponse["Items"][0]["targetLocation"]["M"]
+                targetLocationN = targetLocation["Longitude"]["S"]
+                targetLocationW = targetLocation["Latitude"]["S"]
+                dist = distance((locationN, locationW), (targetLocationN, targetLocationW)).m
+                if(dist <= 20.0):
+                    completeSuccessResponse = client.update_item(
+                        TableName = "frab_revalida",
+                        Key = {
+                            "PK": {
+                                "S": pk
+                            },
+                            "SK": {
+                                "S": sk
+                            }
+                        },
+                        UpdateExpression="SET #state=:state REMOVE stateDate",
+                        ExpressionAttributeNames={
+                            "#state": "state"
+                        },
+                        ExpressionAttributeValues={
+                            ":state": {
+                                "S": "complete_success"
+                            }
+                        }
+                    )
 
         return {
             "statusCode": 200,
