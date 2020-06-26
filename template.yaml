@@ -236,7 +236,7 @@ Resources:
               - "bookingLocation"
               - "targetLocation"
               - "state"
-
+              
 Outputs:
   FrabRevalidaApi:
     Description: "API Gateway endpoint URL for prod stage for Frab Revalida API"
