@@ -3,7 +3,7 @@ version = 0.1
 [default.deploy]
 [default.deploy.parameters]
 stack_name = "frab-revalida"
-s3_bucket = "revalida-m"
+s3_bucket = "frab-revalida-levi"
 s3_prefix = "frab-revalida"
 region = "ap-southeast-1"
 confirm_changeset = true

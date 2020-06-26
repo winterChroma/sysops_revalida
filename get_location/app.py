@@ -40,7 +40,7 @@ def lambda_handler(event, context):
     except:
         return {
             "statusCode": 400,
-            "body": "Bad request"
+            "body": "Bad ID"
         }
 
     location = response["Items"][0]["location"]["M"]

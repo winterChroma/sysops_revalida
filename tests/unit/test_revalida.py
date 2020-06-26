@@ -8,6 +8,7 @@ class TestRevalida:
   @pytest.fixture(scope="class")
   def global_data(self):
     return {
+      "url": "https://leqycb5j0e.execute-api.ap-southeast-1.amazonaws.com/Prod",
       "acceptableRides": [],
       "riderLocation": {},
       "driverLocation": {},
@@ -16,7 +17,7 @@ class TestRevalida:
 
   @pytest.mark.flow
   def test_book_new_ride(self, global_data):
-    url = "http://127.0.0.1:3000/rides"
+    url = global_data["url"]+"/rides"
     payload = json.dumps({
       "riderId": "8B0A79F0-8E4E-4523-A335-2EB98305354F",
       "bookingLocation": {
@@ -33,8 +34,8 @@ class TestRevalida:
     assert response.status_code == 200
 
   @pytest.mark.flow
-  def test_book_new_ride_error(self):
-    url = "http://127.0.0.1:3000/rides"
+  def test_book_new_ride_error(self, global_data):
+    url = global_data["url"]+"/rides"
     payload = json.dumps({})
     response = requests.post(url, data=payload)
     assert response.status_code == 400
@@ -42,7 +43,7 @@ class TestRevalida:
   @pytest.mark.flow
   def test_return_acceptable_rides(self, global_data):
     driverId = "dc90aeaf-db59-44c0-b4c0-19fe5dbe360d"
-    url = f"http://127.0.0.1:3000/drivers/{driverId}/rides/acceptable"
+    url = global_data["url"]+f"/drivers/{driverId}/rides/acceptable"
     response = requests.get(url)
     global_data["acceptableRides"] = json.loads(response.text)
     assert response.status_code == 200
@@ -50,14 +51,14 @@ class TestRevalida:
   @pytest.mark.flow
   def test_get_pending_ride_info(self, global_data):
     rideId = global_data["acceptableRides"][0]['rideId']
-    url = f"http://127.0.0.1:3000/rides/{rideId}"
+    url = global_data["url"]+f"/rides/{rideId}"
     response = requests.get(url)
     state = json.loads(response.text)["state"]
     assert state == "pending"
 
   @pytest.mark.flow
   def test_get_ride_info_error(self, global_data):
-    url = f"http://127.0.0.1:3000/rides/error"
+    url = global_data["url"]+f"/rides/error"
     response = requests.get(url)
     assert response.status_code == 400
 
@@ -65,7 +66,7 @@ class TestRevalida:
   def test_driver_accept_ride(self, global_data):
     driverId = "dc90aeaf-db59-44c0-b4c0-19fe5dbe360d"
     rideId = global_data["acceptableRides"][0]['rideId']
-    url = f"http://127.0.0.1:3000/drivers/{driverId}/rides/{rideId}/accept"
+    url = global_data["url"]+f"/drivers/{driverId}/rides/{rideId}/accept"
     payload = json.dumps({
       "acceptLocation": {
         "N": "40.446",
@@ -82,7 +83,7 @@ class TestRevalida:
   @pytest.mark.flow
   def test_get_accepted_ride_info(self, global_data):
     rideId = global_data["acceptableRides"][0]['rideId']
-    url = f"http://127.0.0.1:3000/rides/{rideId}"
+    url = global_data["url"]+f"/rides/{rideId}"
     response = requests.get(url)
     state = json.loads(response.text)["state"]
     assert state == "accepted"
@@ -95,7 +96,7 @@ class TestRevalida:
       "W": "-121.289874"
     }
     global_data["driverLocation"] = location
-    url = f"http://127.0.0.1:3000/drivers/{driverId}/locations"
+    url = global_data["url"]+f"/drivers/{driverId}/locations"
     payload = json.dumps({
       "updatedLocation": {
         "N": location["N"],
@@ -113,7 +114,7 @@ class TestRevalida:
   def test_driver_get_location(self, global_data):
     driverId = "dc90aeaf-db59-44c0-b4c0-19fe5dbe360d"
     location = global_data["driverLocation"]
-    url = f"http://127.0.0.1:3000/drivers/{driverId}"
+    url = global_data["url"]+f"/drivers/{driverId}"
     response = requests.get(url)
     responseText = json.loads(response.text)
     assert responseText["updatedLocation"]["N"] == location["N"]
@@ -128,7 +129,7 @@ class TestRevalida:
       "W": "-121.288397"
     }
     global_data["riderLocation"] = location
-    url = f"http://127.0.0.1:3000/riders/{riderId}/locations"
+    url = global_data["url"]+f"/riders/{riderId}/locations"
     payload = json.dumps({
       "currentLocation": {
         "N": location["N"],
@@ -146,7 +147,7 @@ class TestRevalida:
   def test_rider_get_location(self, global_data):
     riderId = "8B0A79F0-8E4E-4523-A335-2EB98305354F"
     location = global_data["riderLocation"]
-    url = f"http://127.0.0.1:3000/riders/{riderId}"
+    url = global_data["url"]+f"/riders/{riderId}"
     response = requests.get(url)
     responseText = json.loads(response.text)
     assert responseText["currentLocation"]["N"] == location["N"]
@@ -162,7 +163,7 @@ class TestRevalida:
     payload = json.dumps({
       "riderId": riderId
     })
-    url = f"http://127.0.0.1:3000/drivers/{driverId}/distance"
+    url = global_data["url"]+f"/drivers/{driverId}/distance"
     response = requests.put(url, payload)
     responseText = json.loads(response.text)
     dist = distance((driverLocation["N"], driverLocation["W"]),(riderLocation["N"], riderLocation["W"])).m
