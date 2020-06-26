@@ -1,5 +1,5 @@
 config:
-  target: '<endpoint of frab_revalida>'
+  target: 'https://7jw4oebppb.execute-api.ap-southeast-1.amazonaws.com/Prod'
   phases:
     - duration: 60
       arrivalRate: 20
@@ -8,65 +8,87 @@ config:
     - duration: 60
       arrivalRate: 50
       name: "Max Load"
+  defaults:
+    headers:
+      Authorization: Basic c29tZS1hcGktdG9rZW46
   payload:
-    path: "frab_revalida.csv"
+    path: "rev_payload.csv"
+    cast: false
     fields:
       - "passengerId"
+      - "startLocationN"
+      - "startLocationW"
+      - "endLocationN"
+      - "endLocationW"
       - "driverId"
-      - "locations"
-      - "startLocation"
-      - "endLocation"
 scenarios:
-  - name: "finding ride"
   - flow:
-    - post:
-        url: "/rides"
+  #Rider update location
+    - put:
+        url: "/riders/{{ passengerId }}/locations"
         json:
-          passengerId: "{{ passengerId }}"
-          driverId: "{{ driverId }}"
-          location: "{{ locations }}"
-          startLocation: "{{ startLocation }}"
-          endLocation: "{{ endLocation }}"
-        capture:
-          json: "$.result.rideId"
-          as: "rideId"
-    - think: 10
+          currentLocation:
+            N: "{{ startLocationN }}"
+            W: "{{ startLocationW }}"
+  #Rider get location
+    - get:
+        url: "/riders/{{ passengerId }}"
+  #Book new ride
+    - put:
+        url: "/rides/"
+        json:
+          bookingLocation:
+            N: "{{ startLocationN }}"
+            W: "{{ startLocationW }}"
+          targetLocation:
+            N: "{{ endLocationN }}"
+            W: "{{ endLocationW }}"
+  #Return acceptatble rides
+    - get:
+        url: "/drivers/{{ driverId }}/rides/acceptable"
+  #Get pending ride info
     - get:
         url: "/rides/{{ rideId }}"
-  - name: "get rideId"
-  - flow:
+  #Driver accept ride
+    - put:
+        url: "/drivers/{{ driverId }}/rides/{{ rideId }}/accept"
+        json:
+          acceptLocation:
+            N: "{{ endLocationN }}"
+            W: "{{ endLocationW }}"
+  #Get accepted ride info
     - get:
         url: "/rides/{{ rideId }}"
-  - name: "Accepts the current longitude and latitude of a driver"
-  - flow:
-    - post: 
-        url: "/drivers/:driverId/locations/"
+  #Driver update location
+    - put:
+        url: "/drivers/{{ driverId }}/locations"
         json:
-          driverId: "{{ driverId }}"
-          location: "{{ location }}"
-          startLocation: "{{ startLocation }}"
-          endLocation: "{{ endLocation }}"
-  - name: "Accepts the ride request (driver side.)"
-  - flow: 
-    - post:
-        url: "/drivers/:driverId/rides/:rideId/accept"
-        json:
-          driverId: "{{ driverId }}"
-  - name: "Returns the longitude and latitude of a rider."
-  - flow:
+          updatedLocation:
+            N: "{{ endLocationN }}"
+            W: "{{ endLocationW }}"
+  #Driver get location
     - get:
-        url: "/riders/:riderId/locations/{{ locations }}"
-  - name: "Updates the current longitude and latitude of a rider."
-  - flow:
-    - post:
-        url: "/riders/:riderId/locations"
+        url: "/drivers/{{ driverId }}"
+  #Get Distance
+    - get:
+        url: "/drivers/{{ driverId }}/distance"
+  #Driver update location near passenger
+    - put:
+        url: "/drivers/{{ driverId }}/locations"
         json:
-          rideId: "{{ rideId }}"
-          locations: "{{ locations }}"
-  - name: "Returns a list of rides that the driver can accept. The list of rides is determined by the Ride Scheduling Algorithm."
-  - flow:
-    - post:
-        url: "/drivers/:driverId/ /rides/acceptable"
+          updatedLocation:
+            N: "{{ startLocationN }}" + 0.00232
+            W: "{{ startLocationW }}" + 0.00232
+  #Get in progress ride info  
+    - get:
+        url: "/rides/{{ rideId }}"
+  #Driver update location near target
+    - put:
+        url: "/drivers/{{ driverId }}/locations"
         json:
-          rideId: "{{ rideId }}"
-          driverId: "{{ driverId }}"
+          updatedLocation:
+            N: "{{ endLocationN }}"
+            W: "{{ endLocationW }}"
+  #Get complete success ride info
+    - get:
+        url: "/rides/{{ rideId }}"
