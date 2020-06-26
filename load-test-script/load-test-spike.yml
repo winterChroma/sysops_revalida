@@ -34,15 +34,19 @@ scenarios:
     - get:
         url: "/riders/{{ passengerId }}"
   #Book new ride
-    - put:
-        url: "/rides/"
+    - post:
+        url: "/rides"
         json:
+          riderId: "{{ passengerId }}"
           bookingLocation:
             N: "{{ startLocationN }}"
             W: "{{ startLocationW }}"
           targetLocation:
             N: "{{ endLocationN }}"
             W: "{{ endLocationW }}"
+        capture:
+          json: "$.rideId"
+          as: rideId
   #Return acceptatble rides
     - get:
         url: "/drivers/{{ driverId }}/rides/acceptable"
@@ -70,15 +74,17 @@ scenarios:
     - get:
         url: "/drivers/{{ driverId }}"
   #Get Distance
-    - get:
+    - put:
         url: "/drivers/{{ driverId }}/distance"
+        json:
+          riderId: "{{ passengerId }}"
   #Driver update location near passenger
     - put:
         url: "/drivers/{{ driverId }}/locations"
         json:
           updatedLocation:
-            N: "{{ startLocationN }}" + 0.00232
-            W: "{{ startLocationW }}" + 0.00232
+            N: "{{ startLocationN }}"
+            W: "{{ startLocationW }}"
   #Get in progress ride info  
     - get:
         url: "/rides/{{ rideId }}"
