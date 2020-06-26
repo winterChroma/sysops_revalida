@@ -109,6 +109,23 @@ Resources:
             Path: /drivers/{driverId}/rides/acceptable
             Method: get
 
+  ComputeDistanceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: compute_distance/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref FrabTable
+      Events:
+        AcceptRideRequestApi:
+          Type: Api
+          Properties:
+            Path: /drivers/{driverId}/distance
+            Method: put
+
   FrabBasicAuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties: 

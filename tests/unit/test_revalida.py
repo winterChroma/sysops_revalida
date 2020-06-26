@@ -1,6 +1,7 @@
 import requests
 import json
 import pytest
+from geopy.distance import distance
 
 class TestRevalida:
 
@@ -8,7 +9,8 @@ class TestRevalida:
   def global_data(self):
     return {
       "acceptableRides": [],
-      "location": {},
+      "riderLocation": {},
+      "driverLocation": {},
       "timestamp": ""
     }
 
@@ -89,10 +91,10 @@ class TestRevalida:
   def test_driver_update_location(self, global_data):
     driverId = "dc90aeaf-db59-44c0-b4c0-19fe5dbe360d"
     location = {
-      "N": "40.446",
-      "W": "79.982"
+      "N": "14.505637",
+      "W": "-121.289874"
     }
-    global_data["location"] = location
+    global_data["driverLocation"] = location
     url = f"http://127.0.0.1:3000/drivers/{driverId}/locations"
     payload = json.dumps({
       "updatedLocation": {
@@ -110,7 +112,7 @@ class TestRevalida:
   @pytest.mark.location
   def test_driver_get_location(self, global_data):
     driverId = "dc90aeaf-db59-44c0-b4c0-19fe5dbe360d"
-    location = global_data["location"]
+    location = global_data["driverLocation"]
     url = f"http://127.0.0.1:3000/drivers/{driverId}"
     response = requests.get(url)
     responseText = json.loads(response.text)
@@ -122,10 +124,10 @@ class TestRevalida:
   def test_rider_update_location(self, global_data):
     riderId = "8B0A79F0-8E4E-4523-A335-2EB98305354F"
     location = {
-      "N": "40.446",
-      "W": "79.982"
+      "N": "14.503529",
+      "W": "-121.288397"
     }
-    global_data["location"] = location
+    global_data["riderLocation"] = location
     url = f"http://127.0.0.1:3000/riders/{riderId}/locations"
     payload = json.dumps({
       "currentLocation": {
@@ -135,18 +137,34 @@ class TestRevalida:
     })
     response = requests.put(url, data=payload)
     responseText = json.loads(response.text)
-    assert responseText["currentLocation"]["N"] == "40.446"
-    assert responseText["currentLocation"]["W"] == "79.982"
+    assert responseText["currentLocation"]["N"] == location["N"]
+    assert responseText["currentLocation"]["W"] == location["W"]
     assert responseText["lastActive"]
     global_data["timestamp"] = responseText["lastActive"]
 
   @pytest.mark.location
   def test_rider_get_location(self, global_data):
     riderId = "8B0A79F0-8E4E-4523-A335-2EB98305354F"
-    location = global_data["location"]
+    location = global_data["riderLocation"]
     url = f"http://127.0.0.1:3000/riders/{riderId}"
     response = requests.get(url)
     responseText = json.loads(response.text)
     assert responseText["currentLocation"]["N"] == location["N"]
     assert responseText["currentLocation"]["W"] == location["W"]
     assert responseText["lastActive"] == global_data["timestamp"]
+
+  @pytest.mark.location
+  def test_get_distance(self, global_data):
+    riderId = "8B0A79F0-8E4E-4523-A335-2EB98305354F"
+    driverId = "dc90aeaf-db59-44c0-b4c0-19fe5dbe360d"
+    driverLocation = global_data["driverLocation"]
+    riderLocation = global_data["riderLocation"]
+    payload = json.dumps({
+      "riderId": riderId
+    })
+    url = f"http://127.0.0.1:3000/drivers/{driverId}/distance"
+    response = requests.put(url, payload)
+    responseText = json.loads(response.text)
+    dist = distance((driverLocation["N"], driverLocation["W"]),(riderLocation["N"], riderLocation["W"])).m
+    print(responseText["distance"])
+    assert responseText["distance"] == dist
