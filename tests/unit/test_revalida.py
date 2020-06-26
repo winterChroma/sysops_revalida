@@ -8,7 +8,7 @@ class TestRevalida:
   @pytest.fixture(scope="class")
   def global_data(self):
     return {
-      "url": "https://leqycb5j0e.execute-api.ap-southeast-1.amazonaws.com/Prod",
+      "url": "https://dfwfckxo51.execute-api.ap-southeast-1.amazonaws.com/Prod",
       # "url": "http://127.0.0.1:3000",
       "acceptableRides": [],
       "acceptedRideId": "",

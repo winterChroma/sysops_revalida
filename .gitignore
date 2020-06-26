@@ -2,6 +2,7 @@
 database_design.xlsx
 build_and_local.bat
 samconfig.toml
+build_and_deploy.bat
 
 # Created by https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
 
