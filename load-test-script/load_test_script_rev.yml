@@ -9,7 +9,7 @@ config:
       arrivalRate: 50
       name: "Max Load"
   payload:
-    path: "frab_revalida.csv"
+    path: "rev_payload.csv"
     fields:
       - "passengerId"
       - "driverId"
@@ -17,7 +17,7 @@ config:
       - "startLocation"
       - "endLocation"
 scenarios:
-  - name: "finding ride"
+  - name: "Books a new ride and returns a ride ID."
   - flow:
     - post:
         url: "/rides"
@@ -33,7 +33,7 @@ scenarios:
     - think: 10
     - get:
         url: "/rides/{{ rideId }}"
-  - name: "get rideId"
+  - name: "Returns the state of a ride ID."
   - flow:
     - get:
         url: "/rides/{{ rideId }}"
@@ -65,8 +65,6 @@ scenarios:
           locations: "{{ locations }}"
   - name: "Returns a list of rides that the driver can accept. The list of rides is determined by the Ride Scheduling Algorithm."
   - flow:
-    - post:
-        url: "/drivers/:driverId/ /rides/acceptable"
-        json:
-          rideId: "{{ rideId }}"
-          driverId: "{{ driverId }}"
+    - get:
+        url: "/drivers/:driverId/ /rides/acceptable/{{ rides }}"
+
