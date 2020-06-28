@@ -25,8 +25,8 @@ def lambda_handler(event, context):
 
     # get driver location
     driverResponse = client.query(
-        TableName = "frab_revalida",
-        IndexName = "frab_inverted_index",
+        TableName = dbName,
+        IndexName = dbIndex,
         Select = "SPECIFIC_ATTRIBUTES",
         ProjectionExpression="#loc",
         ExpressionAttributeNames={
@@ -42,8 +42,8 @@ def lambda_handler(event, context):
 
     # get rider location
     riderResponse = client.query(
-        TableName = "frab_revalida",
-        IndexName = "frab_inverted_index",
+        TableName = dbName,
+        IndexName = dbIndex,
         Select = "SPECIFIC_ATTRIBUTES",
         ProjectionExpression="#loc",
         ExpressionAttributeNames={
