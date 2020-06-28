@@ -12,7 +12,12 @@ Resources:
     Properties:
       CodeUri: book_new_ride/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          dbName: !Ref FrabTable
+          dbRegion: !Ref "AWS::Region"
       Policies:
         - DynamoDBWritePolicy:
             TableName:
@@ -30,7 +35,13 @@ Resources:
     Properties:
       CodeUri: get_ride_info/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          dbName: !Ref FrabTable
+          dbRegion: !Ref "AWS::Region"
+          dbIndex: frab_inverted_index
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -48,7 +59,13 @@ Resources:
     Properties:
       CodeUri: update_location/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          dbName: !Ref FrabTable
+          dbRegion: !Ref "AWS::Region"
+          dbIndex: frab_ride_state_update
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -66,7 +83,13 @@ Resources:
     Properties:
       CodeUri: get_location/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          dbName: !Ref FrabTable
+          dbRegion: !Ref "AWS::Region"
+          dbIndex: frab_inverted_index
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -84,7 +107,13 @@ Resources:
     Properties:
       CodeUri: accept_ride_request/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          dbName: !Ref FrabTable
+          dbRegion: !Ref "AWS::Region"
+          dbIndex: frab_inverted_index
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -102,7 +131,13 @@ Resources:
     Properties:
       CodeUri: return_acceptable_rides/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          dbName: !Ref FrabTable
+          dbRegion: !Ref "AWS::Region"
+          dbIndex: frab_pending_rides
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -120,7 +155,13 @@ Resources:
     Properties:
       CodeUri: compute_distance/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.6
+      ReservedConcurrentExecutions: 10
+      Environment:
+        Variables:
+          dbName: !Ref FrabTable
+          dbRegion: !Ref "AWS::Region"
+          dbIndex: frab_inverted_index
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -185,10 +226,8 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "SK"
           KeyType: "RANGE"
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
       TableName: "frab_revalida"
+      BillingMode: PAY_PER_REQUEST
       GlobalSecondaryIndexes:
         - IndexName: "frab_inverted_index"
           KeySchema:
@@ -196,9 +235,6 @@ Resources:
               KeyType: "HASH"
             - AttributeName: "PK"
               KeyType: "RANGE"
-          ProvisionedThroughput:
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
           Projection:
             ProjectionType: "INCLUDE"
             NonKeyAttributes:
@@ -213,9 +249,6 @@ Resources:
               KeyType: "HASH"
             - AttributeName: "datePendingState"
               KeyType: "RANGE"
-          ProvisionedThroughput:
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
           Projection:
             ProjectionType: "INCLUDE"
             NonKeyAttributes:
@@ -227,9 +260,6 @@ Resources:
               KeyType: "HASH"
             - AttributeName: "stateDate"
               KeyType: "RANGE"
-          ProvisionedThroughput:
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
           Projection:
             ProjectionType: "INCLUDE"
             NonKeyAttributes:

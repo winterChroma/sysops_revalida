@@ -1,22 +1,28 @@
 import json
 import boto3
 from datetime import datetime, timedelta
+import os
 
-client = boto3.client('dynamodb', region_name="ap-southeast-1")
+
+dbRegion = os.environ['dbRegion']
+dbName = os.environ['dbName']
+dbIndex = os.environ['dbIndex']
+
+client = boto3.client('dynamodb', region_name=dbRegion)
 
 def lambda_handler(event, context):
 
     driverId = event['pathParameters']["driverId"]
     rideId = event['pathParameters']["rideId"]
     body = json.loads(event['body'])
-    acceptLocationN = body["acceptLocation"]["N"]
-    acceptLocationW = body["acceptLocation"]["W"]
+    acceptLocationN = str(body["acceptLocation"]["N"])
+    acceptLocationW = str(body["acceptLocation"]["W"])
     
     
 
     queryResponse = client.query(
-        TableName = "frab_revalida",
-        IndexName = "frab_inverted_index",
+        TableName = dbName,
+        IndexName = dbIndex,
         Select = "SPECIFIC_ATTRIBUTES",
         ProjectionExpression="PK, SK, #ts",
         KeyConditionExpression="SK = :rideId",
@@ -35,7 +41,7 @@ def lambda_handler(event, context):
     timestamp = queryResponse["Items"][0]["timestamp"]["S"]
     
     response = client.update_item(
-        TableName = "frab_revalida",
+        TableName = dbName,
         Key = {
             "PK": {
                 "S": pk
