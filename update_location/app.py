@@ -3,8 +3,14 @@ import boto3
 import uuid
 from datetime import datetime, timedelta
 from geopy.distance import distance
+import os
 
-client = boto3.client('dynamodb', region_name="ap-southeast-1")
+
+dbRegion = os.environ['dbRegion']
+dbName = os.environ['dbName']
+dbIndex = os.environ['dbIndex']
+
+client = boto3.client('dynamodb', region_name=dbRegion)
 
 def lambda_handler(event, context):
 
@@ -19,15 +25,15 @@ def lambda_handler(event, context):
             pk = "PS#" + riderId
             riderTypeId = "passengerId"
             locationText = "currentLocation"
-            locationN = body["currentLocation"]["N"]
-            locationW = body["currentLocation"]["W"]
+            locationN = str(body["currentLocation"]["N"])
+            locationW = str(body["currentLocation"]["W"])
             timestampType = "lastActive"
         elif(riderType == "drivers"):
             pk = "DR#" + riderId
             riderTypeId = "driverId"
             locationText = "updatedLocation"
-            locationN = body["updatedLocation"]["N"]
-            locationW = body["updatedLocation"]["W"]
+            locationN = str(body["updatedLocation"]["N"])
+            locationW = str(body["updatedLocation"]["W"])
             timestampType = "createdAt"
         
         locationId = str(uuid.uuid4())
@@ -35,7 +41,7 @@ def lambda_handler(event, context):
         timestamp = now.strftime("%Y-%m-%dT%H-%M-%S+8000")
 
         response = client.update_item(
-            TableName = "frab_revalida",
+            TableName = dbName,
             Key = {
                 "PK": {
                     "S": pk
@@ -76,7 +82,7 @@ def lambda_handler(event, context):
         if(riderType == "drivers"):
             stateUpdateResponse = client.query(
                 TableName = "frab_revalida",
-                IndexName = "frab_ride_state_update",
+                IndexName = dbIndex,
                 KeyConditionExpression = "driverIdKey= :pk",
                 ExpressionAttributeValues= {
                     ":pk": {
@@ -99,7 +105,7 @@ def lambda_handler(event, context):
                 dist = distance((locationN, locationW), (bookingLocationN, bookingLocationW)).m
                 if(dist <= 20.0):
                     inProgressResponse = client.update_item(
-                        TableName = "frab_revalida",
+                        TableName = dbName,
                         Key = {
                             "PK": {
                                 "S": pk

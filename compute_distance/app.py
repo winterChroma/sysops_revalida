@@ -1,8 +1,14 @@
 import json
 import boto3
 from geopy.distance import distance
+import os
 
-client = boto3.client('dynamodb', region_name="ap-southeast-1")
+
+dbRegion = os.environ['dbRegion']
+dbName = os.environ['dbName']
+dbIndex = os.environ['dbIndex']
+
+client = boto3.client('dynamodb', region_name=dbRegion)
 
 def lambda_handler(event, context):
 
@@ -20,8 +26,8 @@ def lambda_handler(event, context):
     # get driver location
     try:
         driverResponse = client.query(
-            TableName = "frab_revalida",
-            IndexName = "frab_inverted_index",
+            TableName = dbName,
+            IndexName = dbIndex,
             Select = "SPECIFIC_ATTRIBUTES",
             ProjectionExpression="#loc",
             ExpressionAttributeNames={
@@ -44,8 +50,8 @@ def lambda_handler(event, context):
     # get driver location
     try:
         riderResponse = client.query(
-            TableName = "frab_revalida",
-            IndexName = "frab_inverted_index",
+            TableName = dbName,
+            IndexName = dbIndex,
             Select = "SPECIFIC_ATTRIBUTES",
             ProjectionExpression="#loc",
             ExpressionAttributeNames={

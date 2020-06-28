@@ -2,8 +2,12 @@ import json
 import uuid
 import boto3
 from datetime import datetime, timedelta
+import os
 
-client = boto3.client('dynamodb', region_name="ap-southeast-1")
+
+dbRegion = os.environ['dbRegion']
+dbName = os.environ['dbName']
+client = boto3.client('dynamodb', region_name=dbRegion)
 
 def lambda_handler(event, context):
 
@@ -11,10 +15,10 @@ def lambda_handler(event, context):
         body = json.loads(event['body'])
 
         riderId = body["riderId"]
-        bookingLocationN = body["bookingLocation"]["N"]
-        bookingLocationW = body["bookingLocation"]["W"]
-        targetLocationN = body["targetLocation"]["N"]
-        targetLocationW = body["targetLocation"]["W"]
+        bookingLocationN = str(body["bookingLocation"]["N"])
+        bookingLocationW = str(body["bookingLocation"]["W"])
+        targetLocationN = str(body["targetLocation"]["N"])
+        targetLocationW = str(body["targetLocation"]["W"])
         state = "pending"
 
         rideId = str(uuid.uuid4())
@@ -22,7 +26,7 @@ def lambda_handler(event, context):
         timestamp = now.strftime("%Y-%m-%dT%H-%M-%S+8000")
 
         response = client.put_item(
-            TableName = "frab_revalida",
+            TableName = dbName,
             Item = {
                 "PK": {
                     "S": "PS#" +    riderId
