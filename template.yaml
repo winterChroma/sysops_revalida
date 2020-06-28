@@ -226,10 +226,8 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "SK"
           KeyType: "RANGE"
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
       TableName: "frab_revalida"
+      BillingMode: PAY_PER_REQUEST
       GlobalSecondaryIndexes:
         - IndexName: "frab_inverted_index"
           KeySchema:
@@ -237,9 +235,6 @@ Resources:
               KeyType: "HASH"
             - AttributeName: "PK"
               KeyType: "RANGE"
-          ProvisionedThroughput:
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
           Projection:
             ProjectionType: "INCLUDE"
             NonKeyAttributes:
@@ -254,9 +249,6 @@ Resources:
               KeyType: "HASH"
             - AttributeName: "datePendingState"
               KeyType: "RANGE"
-          ProvisionedThroughput:
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
           Projection:
             ProjectionType: "INCLUDE"
             NonKeyAttributes:
@@ -268,9 +260,6 @@ Resources:
               KeyType: "HASH"
             - AttributeName: "stateDate"
               KeyType: "RANGE"
-          ProvisionedThroughput:
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
           Projection:
             ProjectionType: "INCLUDE"
             NonKeyAttributes:
