@@ -81,7 +81,7 @@ def lambda_handler(event, context):
 
         if(riderType == "drivers"):
             stateUpdateResponse = client.query(
-                TableName = "frab_revalida",
+                TableName = dbName,
                 IndexName = dbIndex,
                 KeyConditionExpression = "driverIdKey= :pk",
                 ExpressionAttributeValues= {
@@ -135,7 +135,7 @@ def lambda_handler(event, context):
                 dist = distance((locationN, locationW), (targetLocationN, targetLocationW)).m
                 if(dist <= 20.0):
                     completeSuccessResponse = client.update_item(
-                        TableName = "frab_revalida",
+                        TableName = dbName,
                         Key = {
                             "PK": {
                                 "S": pk
